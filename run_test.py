@@ -1,7 +1,10 @@
 from cvd.engine import *
 
-img = load_image("test.png")
-lin = srgb_to_linear(img)
-back = linear_to_srgb(lin)
-save_image(back, "roundtrip.png")
-print("max difference:", abs(img - back).max())
+for kind in ["protanopia", "deuteranopia", "tritanopia"]:
+       rank, s, null_dir, check = null_space_info(kind)
+       print(kind)
+       print("  rank:", rank)
+       print("  singular values:", s)
+       print("  null direction:", null_dir)
+       print("  matrix x null direction (should be ~0):", check)
+       print("")
