@@ -1,10 +1,12 @@
 from cvd.engine import *
 
-for kind in ["protanopia", "deuteranopia", "tritanopia"]:
-       rank, s, null_dir, check = null_space_info(kind)
-       print(kind)
-       print("  rank:", rank)
-       print("  singular values:", s)
-       print("  null direction:", null_dir)
-       print("  matrix x null direction (should be ~0):", check)
-       print("")
+img = load_image("test.png")
+kind = "deuteranopia"
+
+save_image(simulate(img, kind), "before_as_seen.png")
+
+for a in [0.5, 1.0, 1.5]:
+    fixed = correct(img, kind, alpha=a)
+    save_image(fixed, f"fixed_{a}.png")
+    save_image(simulate(fixed, kind), f"fixed_{a}_as_seen.png")
+    print("saved alpha", a)

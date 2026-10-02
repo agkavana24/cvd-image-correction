@@ -54,3 +54,15 @@ def null_space_info(kind):
        null_dir = Vt[-1]
        check = S @ null_dir
        return rank, s, null_dir, check
+
+SHIFT = np.array([[0.0, 0.0, 0.0],
+                  [0.7, 1.0, 0.0],
+                  [0.7, 0.0, 1.0]])
+
+
+def correct(img_srgb, kind, alpha=1.0):
+    lin = srgb_to_linear(img_srgb)
+    sim = apply_matrix(lin, rgb_sim_matrix(kind))
+    lost = lin - sim
+    shifted = apply_matrix(lost, SHIFT)
+    return linear_to_srgb(lin + alpha * shifted)
