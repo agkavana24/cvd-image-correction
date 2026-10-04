@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Results - ChromaFix</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">ChromaFix</div>
+    <div class="tag">{{ kind }} &middot; strength {{ alpha }}{% if highlight %} &middot; figure highlight on{% endif %}</div>
+  </header>
+
+  {% if highlight and figure_info and not figure_info.confident %}
+  <div class="card section" style="border-color:#ffd36b;color:#ffe9a8">
+    <b>No clear hidden figure was found in this image.</b>
+    The figure highlight is meant for Ishihara-style plates, so only the matrix correction was applied.
+  </div>
+  {% endif %}
+
+  <div class="stats">
+    {% if fig_before is not none %}
+    <div class="card stat">
+      <div class="num good">{{ fig_before }} &rarr; {{ fig_after }}</div>
+      <div class="lbl">Figure vs background contrast as this viewer sees it (higher = easier to read)</div>
+    </div>
+    {% endif %}
+    <div class="card stat">
+      <div class="num">{{ base }} &rarr; {{ score }}</div>
+      <div class="lbl">Overall contrast preserved for this viewer (1.0 = nothing lost)</div>
+    </div>
+    <div class="card stat">
+      <div class="num {{ 'good' if pct > 0 else 'bad' }}">{{ pct }}%</div>
+      <div class="lbl">Change in overall contrast after correction</div>
+    </div>
+    <div class="card stat">
+      <div class="num">{{ drift }}</div>
+      <div class="lbl">Color drift for normal vision (lower = more natural)</div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>What this viewer sees: drag to compare</h2>
+    <div class="cap"><span>No correction</span><span>Corrected</span></div>
+    <div class="compare">
+      <img src="{{ url_for('static', filename=paths.after) }}" alt="corrected as seen">
+      <div class="top" id="top" style="clip-path: inset(0 50% 0 0)">
+        <img src="{{ url_for('static', filename=paths.before) }}" alt="uncorrected as seen">
+      </div>
+      <div class="line" id="line" style="left:50%"></div>
+    </div>
+    <input type="range" id="cmp" min="0" max="100" value="50">
+  </div>
+
+  <div class="card">
+    <h2>All images</h2>
+    <div class="grid">
+      <div class="tile"><img src="{{ url_for('static', filename=paths.original) }}"><h3>Original</h3></div>
+      <div class="tile"><img src="{{ url_for('static', filename=paths.before) }}"><h3>As seen, no correction</h3></div>
+      <div class="tile"><img src="{{ url_for('static', filename=paths.corrected) }}"><h3>Corrected image</h3></div>
+      <div class="tile"><img src="{{ url_for('static', filename=paths.after) }}"><h3>As seen, corrected</h3></div>
+      {% if paths.mask %}
+      <div class="tile"><img src="{{ url_for('static', filename=paths.mask) }}"><h3>Detected figure (PCA)</h3></div>
+      {% endif %}
+    </div>
+    <div class="actions">
+      <a class="btn ghost" href="{{ url_for('static', filename=paths.corrected) }}" download="corrected.png">Download corrected image</a>
+      <a class="btn ghost" href="/">Try another image</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const cmp = document.getElementById('cmp');
+  cmp.addEventListener('input', () => {
+    document.getElementById('top').style.clipPath = 'inset(0 ' + (100 - cmp.value) + '% 0 0)';
+    document.getElementById('line').style.left = cmp.value + '%';
+  });
+</script>
+</body>
+</html>

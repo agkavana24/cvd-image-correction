@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChromaFix - Color Vision Correction</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">ChromaFix</div>
+    <div class="tag">Matrix-based color vision correction, with a before/after check</div>
+  </header>
+
+  {% if error %}
+  <div class="card narrow section" style="border-color:#ff8a8a;color:#ffb3b3">
+    <b>Something went wrong:</b> {{ error }}
+  </div>
+  {% endif %}
+
+  <form class="card narrow" action="/process" method="post" enctype="multipart/form-data" id="form">
+
+    <div class="section">
+      <h2>1. Your image</h2>
+      <label class="drop" id="drop">
+        <input type="file" name="image" id="file" accept="image/png,image/jpeg" required>
+        <div id="dropInner">
+          <div class="big">&#128247;</div>
+          <div>Click to choose, or drag an image here</div>
+          <div class="hint">PNG or JPG, up to 5 MB</div>
+        </div>
+      </label>
+    </div>
+
+    <div class="section">
+      <h2>2. Type of color vision deficiency</h2>
+      <div class="seg">
+        <label><input type="radio" name="kind" value="deuteranopia" checked>
+          Deuteranopia<small>green-blind</small></label>
+        <label><input type="radio" name="kind" value="protanopia">
+          Protanopia<small>red-blind</small></label>
+        <label><input type="radio" name="kind" value="tritanopia">
+          Tritanopia<small>blue-blind</small></label>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>3. Correction strength</h2>
+      <div class="row"><span class="sub">Gentle to strong</span><output id="v">1.0</output></div>
+      <input type="range" name="alpha" min="0.2" max="2" step="0.1" value="1.0"
+             oninput="document.getElementById('v').textContent=this.value">
+    </div>
+
+    <div class="section">
+      <h2>4. Hidden-figure plates</h2>
+      <label class="switch">
+        <input type="checkbox" name="highlight" id="hl">
+        <span class="track"></span>
+        <span>Highlight the hidden figure<br>
+          <span class="sub">For Ishihara-style plates. The figure is found automatically
+          with PCA, whatever its color.</span></span>
+      </label>
+    </div>
+
+    <button class="btn" type="submit">Correct image</button>
+  </form>
+</div>
+
+<div id="loading"><div class="spin"></div><div>Processing your image...</div></div>
+
+<script>
+  const file = document.getElementById('file');
+  const drop = document.getElementById('drop');
+  const inner = document.getElementById('dropInner');
+
+  function preview() {
+    const f = file.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = e => {
+      inner.innerHTML = '<img src="' + e.target.result + '"><div class="hint">' + f.name + '</div>';
+    };
+    r.readAsDataURL(f);
+  }
+  file.addEventListener('change', preview);
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => { file.files = e.dataTransfer.files; preview(); });
+
+  document.getElementById('form').addEventListener('submit', () => {
+    document.getElementById('loading').style.display = 'flex';
+  });
+</script>
+</body>
+</html>
